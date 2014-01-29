@@ -193,17 +193,7 @@ class Doctrine_Template_Sortable extends Doctrine_Template
                               ->andWhere($this->_options['name'] . ' >= ?', $newPosition)
                               ->orderBy($this->_options['name'] . ' DESC');
 
-      foreach ($this->_options['uniqueBy'] as $field)
-      {
-        if (is_null($object[$field]))
-        {
-          $q->addWhere($field . ' IS NULL');
-        }
-        else
-        {
-          $q->addWhere($field . ' = ?', $object[$field]);
-        }
-      }
+      $this->queryAddSortableUniqueBy($q, $object);
 
       // some drivers do not support UPDATE with ORDER BY query syntax
       if ($this->canUpdateWithOrderBy($conn))
@@ -230,17 +220,7 @@ class Doctrine_Template_Sortable extends Doctrine_Template
                               ->andWhere($this->_options['name'] . ' <= ?', $newPosition)
                               ->orderBy($this->_options['name'] . ' ASC');
 
-      foreach($this->_options['uniqueBy'] as $field)
-      {
-        if (is_null($object[$field]))
-        {
-          $q->addWhere($field . ' IS NULL');
-        }
-        else
-        {
-          $q->addWhere($field . ' = ?', $object[$field]);
-        }
-      }
+      $this->queryAddSortableUniqueBy($q, $object);
 
       // some drivers do not support UPDATE with ORDER BY query syntax
       if ($this->canUpdateWithOrderBy($conn))
@@ -409,21 +389,7 @@ class Doctrine_Template_Sortable extends Doctrine_Template
 
     $q->addWhere($this->_options['name'] . ' < ?', $object->get($this->_options['name']));
 
-    foreach($this->_options['uniqueBy'] as $field)
-    {
-      if(is_object($object[$field]))
-      {
-        $q->addWhere($field . ' = ?', $object[$field]['id']);
-      }
-      elseif (is_null($object[$field])) 
-      {
-          $q->addWhere($field . ' IS NULL');
-      }
-      else
-      {
-        $q->addWhere($field . ' = ?', $object[$field]);
-      }
-    }
+    $this->queryAddSortableUniqueBy($q, $object);
 
     $prev = $q->limit(1)->fetchOne();
     $position = $prev ? $prev->get($this->_options['name']) : 0;
@@ -441,21 +407,7 @@ class Doctrine_Template_Sortable extends Doctrine_Template
 
     $q->addWhere($this->_options['name'] . ' > ?', $object->get($this->_options['name']));
 
-    foreach($this->_options['uniqueBy'] as $field)
-    {
-      if(is_object($object[$field]))
-      {
-        $q->addWhere($field . ' = ?', $object[$field]['id']);
-      }
-      elseif (is_null($object[$field])) 
-      {
-          $q->addWhere($field . ' IS NULL');
-      }
-      else
-      {
-        $q->addWhere($field . ' = ?', $object[$field]);
-      }
-    }
+    $this->queryAddSortableUniqueBy($q, $object);
 
     $next = $q->limit(1)->fetchOne();
     $position = $next ? $next->get($this->_options['name']) : 0;
@@ -476,21 +428,7 @@ class Doctrine_Template_Sortable extends Doctrine_Template
                             ->select($this->_options['name'])
                             ->orderBy($this->_options['name'] . ' desc');
 
-   foreach($this->_options['uniqueBy'] as $field)
-   {
-     if(is_object($object[$field]))
-     {
-       $q->addWhere($field . ' = ?', $object[$field]['id']);
-     }
-     if (is_null($object[$field])) 
-     {
-       $q->addWhere($field . ' IS NULL');
-     }
-     else
-     {
-       $q->addWhere($field . ' = ?', $object[$field]);
-     }
-   }
+    $this->queryAddSortableUniqueBy($q, $object);
 
    $last = $q->limit(1)->fetchOne();
    $finalPosition = $last ? $last->get($this->_options['name']) : 0;
@@ -506,5 +444,31 @@ class Doctrine_Template_Sortable extends Doctrine_Template
     return $conn->getTransactionLevel() < 2 &&
       // some drivers do not support UPDATE with ORDER BY query syntax
       $conn->getDriverName() != 'Pgsql' && $conn->getDriverName() != 'Sqlite' && $conn->getDriverName() != 'Mssql';
+  }
+
+  public function queryAddSortableUniqueBy($q, $object)
+  {
+    foreach($this->_options['uniqueBy'] as $field)
+    {
+       if(is_object($object[$field]))
+       {
+         if (is_null($object[$field]['id'])) {
+           $q->addWhere($field . ' IS NULL');
+         } else {
+           $q->addWhere($field . ' = ?', $object[$field]['id']);
+         }
+       }
+       else
+       {
+         if (is_null($object[$field])) {
+           $q->addWhere($field . ' IS NULL');
+         }
+         else
+         {
+           $q->addWhere($field . ' = ?', $object[$field]);
+         }
+      }
+    }
+    return $q;
   }
 }
