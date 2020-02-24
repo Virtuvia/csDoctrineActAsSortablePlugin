@@ -29,7 +29,7 @@ class Doctrine_Template_Sortable extends Doctrine_Template
           'fields'      =>  array(),
           'uniqueBy'    =>  array(),
           'uniqueIndex' =>  true,
-          'indexName'   =>  'sortable')
+          'indexName'   =>  null)
   ;
 
   /**
@@ -91,7 +91,7 @@ class Doctrine_Template_Sortable extends Doctrine_Template
   */
   protected function getSortableIndexName()
   {
-    return sprintf('%s_%s_%s', $this->getTable()->getTableName(), $this->_options['name'], $this->_options['indexName']);
+    return $this->_options['indexName'] ?: sprintf('%s_%s_sortable', $this->getTable()->getTableName(), $this->_options['name']);
   }
 
 
