@@ -29,7 +29,9 @@ class Doctrine_Template_Sortable extends Doctrine_Template
           'fields'      =>  array(),
           'uniqueBy'    =>  array(),
           'uniqueIndex' =>  true,
-          'indexName'   =>  null)
+          'indexName'   =>  null,
+          'allowUpdateWithOrderBy' => true,
+      )
   ;
 
   /**
@@ -441,7 +443,7 @@ class Doctrine_Template_Sortable extends Doctrine_Template
   {
     // If transaction level is greater than 1,
     // query will throw exceptions when using this function
-    return $conn->getTransactionLevel() < 2 &&
+    return $this->_options['allowUpdateWithOrderBy'] === true && $conn->getTransactionLevel() < 2 &&
       // some drivers do not support UPDATE with ORDER BY query syntax
       $conn->getDriverName() != 'Pgsql' && $conn->getDriverName() != 'Sqlite' && $conn->getDriverName() != 'Mssql';
   }
